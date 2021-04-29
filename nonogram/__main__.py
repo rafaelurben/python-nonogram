@@ -50,30 +50,39 @@ class _NonogramLines():
         return None not in values
 
     @classmethod
+    def fillline(cls, values):
+        "Replace all empty fields with False"
+        for i, val in enumerate(values):
+            if val is None:
+                values[i] = False
+        return values
+
+    @classmethod
+    def solve_longest(cls, values, requirements):
+        "Solving method 2"
+
+    @classmethod
     def solve_fullline(cls, values, requirements):
-        "Solve a line if it uses up the full (remaining) line"
+        "Solving method 1"
         offset = cls.getsideoffset(values)
         fullwidth = cls.getfullwidth(requirements)
         print(fullwidth, offset)
         if fullwidth - offset[0] == len(values):
             index = offset[1]
-            for i, req in enumerate(requirements):
+            for req in requirements:
                 for _ in range(req):
                     values[index] = True
                     index += 1
-                # add False inbetween
-                if i+1 < len(requirements):
-                    values[index] = False
-                    index += 1
+            return cls.fillline(values)
         return values
 
     @classmethod
     def solve(cls, values, requirements):
         "Try to solve a standalone line"
-        print("start solve", values, requirements)
+        print("line solve", values, requirements)
         if not cls.isfull(values):
             values = cls.solve_fullline(values, requirements)
-        print("end solve", values, requirements)
+        print(values, "end line solve")
         return values
 
 
