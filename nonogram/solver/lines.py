@@ -71,13 +71,13 @@ class NonogramLine():
         "Solving method 1"
         offset = cls.getsideoffset(values)
         fullwidth = cls.getfullwidth(requirements)
-        print(fullwidth, offset)
         if fullwidth - offset[0] == len(values):
+            print("- solve fullline", fullwidth, "offset", offset)
             index = offset[1]
             for req in requirements:
-                for _ in range(req):
-                    values[index] = True
-                    index += 1
+                values[index:index+req] = [True]*req
+                index += req+1
+            print(values, "- end solve fulline")
             return cls.fillline(values)
         return values
 
