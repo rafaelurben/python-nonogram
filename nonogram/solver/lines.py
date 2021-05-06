@@ -29,6 +29,27 @@ class NonogramLine():
         return (offsetstart+offsetend, offsetstart, offsetend)
 
     @classmethod
+    def getfreeranges(cls, values):
+        """Get a list of free ranges in a line
+        Return format: [(len, pos, values, contains True?), ...]"""
+        ranges = []
+        curr = 0
+        currstart = None
+        for i, val in enumerate(values+[0]):
+            if (val is None) or (val is True):
+                curr += 1
+                if currstart is None:
+                    currstart = i
+            elif currstart is not None:
+                fullcurr = values[currstart:i]
+                ranges.append(
+                    (curr, (currstart, i-1), fullcurr, True in fullcurr)
+                )
+                curr = 0
+                currstart = None
+        return ranges
+
+    @classmethod
     def isfull(cls, values):
         "Check if a line is full"
         return None not in values
