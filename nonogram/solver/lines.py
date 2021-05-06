@@ -63,10 +63,6 @@ class NonogramLine():
         return values
 
     @classmethod
-    def solve_longest(cls, values, requirements):
-        "Solving method 2"
-
-    @classmethod
     def solve_fullline(cls, values, requirements):
         "Solving method 1"
         offset = cls.getsideoffset(values)
@@ -82,10 +78,30 @@ class NonogramLine():
         return values
 
     @classmethod
+    def solve_ranges(cls, values, requirements):
+        "Solving method 2"
+        print("- solve ranges")
+        ranges = cls.getfreeranges(values)
+
+        if len(ranges) == len(requirements):
+            for i, ran in enumerate(ranges):
+                rlen = requirements[i]
+                if ran[0] == rlen:
+                    values[ran[1][0]:ran[1][1]+1] = [True]*rlen
+        elif len(ranges) < len(requirements):
+            ...
+        elif len(ranges) > len(requirements):
+            ...
+        print(values, "- end solve ranges")
+        return values
+
+    @classmethod
     def solve(cls, values, requirements):
         "Try to solve a standalone line"
         print("line solve", values, requirements)
         if not cls.isfull(values):
             values = cls.solve_fullline(values, requirements)
+        if not cls.isfull(values):
+            values = cls.solve_ranges(values, requirements)
         print(values, "end line solve")
         return values
