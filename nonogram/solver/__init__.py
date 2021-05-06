@@ -1,0 +1,1 @@
+from nonogram.solver.solver import solve
