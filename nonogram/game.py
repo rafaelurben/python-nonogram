@@ -98,9 +98,9 @@ class NonogramGame():
     def export(self):
         "Get the data of this board to copy and create a new one later with `NonogramGame(**data)`"
         return {
-            'xinfo': self.__xinfo,
-            'yinfo': self.__yinfo,
-            'board': self.__board,
+            'xinfo': [x.copy() for x in self.__xinfo],
+            'yinfo': [y.copy() for y in self.__yinfo],
+            'board': [b.copy() for b in self.__board],
         }
 
     def print(self):

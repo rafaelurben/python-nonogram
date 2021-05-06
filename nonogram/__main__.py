@@ -45,6 +45,7 @@ game = NonogramGame(
         [N, N, N, X, N, X, N, N, N, N],
     ]
 )
-game.print()
+gamecopy = NonogramGame(**game.export())
 game.solve()
+gamecopy.print()
 game.print()
