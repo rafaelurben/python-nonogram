@@ -32,7 +32,7 @@ class NonogramLine():
     @classmethod
     def getfreeranges(cls, values):
         """Get a list of free ranges in a line
-        Return format: [(len, pos, values, contains True?), ...]"""
+        Return format: [(len, pos, values), ...]"""
         ranges = []
         curr = 0
         currstart = None
@@ -44,7 +44,7 @@ class NonogramLine():
             elif currstart is not None:
                 fullcurr = values[currstart:i]
                 ranges.append(
-                    (curr, (currstart, i-1), fullcurr, True in fullcurr)
+                    (curr, (currstart, i-1), fullcurr)
                 )
                 curr = 0
                 currstart = None
@@ -68,7 +68,7 @@ class NonogramLine():
         "Solving method"
         offset = cls.getsideoffset(values)
         fullwidth = cls.getfullwidth(requirements)
-        print("- solve fullline", fullwidth, "offset", offset)
+        print("- solve fullline", {"fullwidth": fullwidth, "offset": offset})
         if fullwidth - offset[0] == len(values):
             index = offset[1]
             for req in requirements:
@@ -83,8 +83,8 @@ class NonogramLine():
     @classmethod
     def solve_ranges(cls, values, requirements):
         "Solving method"
-        print("- solve ranges")
         ranges = cls.getfreeranges(values)
+        print("- solve ranges", {"ranges": ranges})
 
         # Remove all ranges which are too small
         smallestreq = min(requirements)
@@ -101,14 +101,11 @@ class NonogramLine():
                 values[ran[1][0]:ran[1][0]+requirements[0]] = [True]*requirements[0]
                 values[ran[1][0]+requirements[0]+1] = False
             break
-        print(values)
         for ran in ranges[::-1]:
-            print(ran)
             if ran[0] < requirements[-1]:
                 values[ran[1][0]:ran[1][1]+1] = [False]*ran[0]
                 continue
             if ran[2][-1] is True:
-                print("ends true")
                 values[ran[1][1]-requirements[-1]+1:ran[1][1]+1] = [True]*requirements[-1]
                 values[ran[1][1]-requirements[-1]] = False
             break
@@ -124,7 +121,7 @@ class NonogramLine():
 
         # TODO: Trim offset at start / Also trim fullfilled requirements
 
-        print(values, requirements)
+        print({"values":values, "requirements":requirements})
 
         if not cls.isfull(values):
             values = cls.solve_fullline(values, requirements)
