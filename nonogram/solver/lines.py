@@ -1,6 +1,7 @@
 "Utils for solving lines in Nonogram"
 
 from rich import print
+from rich.rule import Rule
 
 class NonogramLine():
     "Class with helper methods for solving individual lines"
@@ -120,10 +121,14 @@ class NonogramLine():
     @classmethod
     def solve(cls, values, requirements):
         "Try to solve a standalone line"
-        print("line solve", values, requirements)
+
+        # TODO: Trim offset at start / Also trim fullfilled requirements
+
+        print(values, requirements)
+
         if not cls.isfull(values):
             values = cls.solve_fullline(values, requirements)
         if not cls.isfull(values):
             values = cls.solve_ranges(values, requirements)
-        print("end line solve")
+
         return values
