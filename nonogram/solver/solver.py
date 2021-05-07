@@ -28,5 +28,6 @@ def solve(game):
     newhash = hash(str(game.rows))
 
     if oldhash != newhash:
+        game.print()
         print(Rule(title="Next solving cycle"))
-        #solve(game)
+        solve(game)
