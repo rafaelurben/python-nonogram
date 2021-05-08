@@ -3,8 +3,8 @@
 from nonogram.game import NonogramGame
 from nonogram import examples
 
-game = NonogramGame(**examples.easy2)
-gamecopy = NonogramGame(**examples.easy2)
+game = NonogramGame(**examples.medium1)
+gamecopy = NonogramGame(**examples.medium1)
 
 game.solve()
 gamecopy.print()
