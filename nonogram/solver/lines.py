@@ -1,7 +1,6 @@
 "Utils for solving lines in Nonogram"
 
 from rich import print
-from rich.rule import Rule
 
 from nonogram.solver.exceptions import UnsolvableLine
 
@@ -120,7 +119,7 @@ class NonogramLine():
             if ran[0] < requirements[0]:
                 values[ran[1][0]:ran[1][1]+1] = [False]*ran[0]
                 continue
-            if ran[2][0] is True:
+            if ran[2][0] is True or (ran[0] == requirements[0] and True in ran[2]):
                 values[ran[1][0]:ran[1][0]+requirements[0]] = [True]*requirements[0]
                 if ran[1][0]+requirements[0] < len(values):
                     values[ran[1][0]+requirements[0]] = False
@@ -129,7 +128,7 @@ class NonogramLine():
             if ran[0] < requirements[-1]:
                 values[ran[1][0]:ran[1][1]+1] = [False]*ran[0]
                 continue
-            if ran[2][-1] is True:
+            if ran[2][-1] is True or (ran[0] == requirements[-1] and True in ran[2]):
                 values[ran[1][1]-requirements[-1]+1:ran[1][1]+1] = [True]*requirements[-1]
                 if ran[1][1]-requirements[-1] >= 0:
                     values[ran[1][1]-requirements[-1]] = False
