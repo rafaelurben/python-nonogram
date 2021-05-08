@@ -1,5 +1,7 @@
 "A Nonogram game"
 
+import copy
+
 from rich import print
 from rich.table import Table, Column
 from rich.rule import Rule
@@ -23,9 +25,9 @@ class NonogramGame():
         if len(xinfo) != len(board) or len(yinfo) != len(board[0]):
             raise ValueError("Invalid board!")
 
-        self.__xinfo = xinfo
-        self.__yinfo = yinfo
-        self.__board = board
+        self.__xinfo = copy.deepcopy(xinfo)
+        self.__yinfo = copy.deepcopy(yinfo)
+        self.__board = copy.deepcopy(board)
 
     # Properties
 
@@ -96,11 +98,11 @@ class NonogramGame():
     # Utils
 
     def export(self):
-        "Get the data of this board to copy and create a new one later with `NonogramGame(**data)`"
+        "Get a copy of this board's data to create a new one later with `NonogramGame(**data)`"
         return {
-            'xinfo': [x.copy() for x in self.__xinfo],
-            'yinfo': [y.copy() for y in self.__yinfo],
-            'board': [b.copy() for b in self.__board],
+            'xinfo': copy.deepcopy(self.__xinfo),
+            'yinfo': copy.deepcopy(self.__yinfo),
+            'board': copy.deepcopy(self.__board),
         }
 
     def print(self):
@@ -109,7 +111,8 @@ class NonogramGame():
         tab = Table(
             Column(justify='right', no_wrap=True),
             title="Nonogram game",
-            caption="python-nonogram by rafaelurben",
+            caption="[link=https://github.com/rafaelurben/python-nonogram]python-nonogram[/link] by "
+                    "[link=https://github.com/rafaelurben]rafaelurben[/link]",
         )
         for col in range(self.width):
             tab.add_column(
