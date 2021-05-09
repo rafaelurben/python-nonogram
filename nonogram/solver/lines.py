@@ -75,7 +75,8 @@ class NonogramLine():
 
         # Check for potential errors
         if not completed and cls.isfull(values):
-            raise UnsolvableLine("Requirements are not met but line is full!")
+            raise UnsolvableLine("Requirements are not met but line is full! "
+                                 f"{values} {requirements}")
 
         return completed
 
@@ -115,10 +116,14 @@ class NonogramLine():
         log("[yellow][Solving ranges] Start[/]")
         log({"ranges": ranges})
 
-        # Remove all ranges which are too small
+        # Remove all ranges which aren't usable
         smallestreq = min(requirements)
+
+        fillempty = len(ranges) > 1 and countin(
+            map(lambda x: True in x[2], ranges), True) == len(requirements)
+
         for ran in ranges:
-            if ran[0] < smallestreq:
+            if ran[0] < smallestreq or (fillempty and not True in ran[2]):
                 values[ran[1][0]:ran[1][1]+1] = [False]*ran[0]
 
         # Update ranges var
@@ -157,6 +162,15 @@ class NonogramLine():
             log("[yellow][Solving ranges] Succeeded with exact match[/]")
             return values
 
+        # Case "Only one requirement in one range"
+        if len(requirements) == 1 and len(ranges) == 1:
+            req = requirements[0]
+            ran = ranges[0]
+            # TODO
+            # Fill from middle if req longer than ran[0]/2 !EVEN/ODD!
+            # Fill between multiple Trues
+            # Get length of Trues, space left and space right
+            # Use this info to maybe fill up a little bit
 
         log("[yellow][Solving ranges] Ended[/]")
         return values
@@ -172,7 +186,9 @@ class NonogramLine():
 
         # START) Skip if line is already full
         if cls.iscompleted(values, requirements):
-            values = cls.fillline(values)
+            if not cls.isfull(values):
+                values = cls.fillline(values)
+                log(values)
             return values
 
         # 1a) Trim from ends
@@ -190,17 +206,19 @@ class NonogramLine():
             values[i_end] = False
             trim_start = i_end+1
 
+        offset = cls.getoffset(values)
+
         trim_end = 0
         i_last = -1-offset[2]
         if values[i_last] is True:
-            i_start = i_last-requirements[-1]
-            values[i_start:i_last] = [True]*requirements[-1]
-            if not (len(values) + i_start) >= 0:
+            i_start = i_last-requirements[-1]+1
+            values[i_start:i_last+1 or None] = [True]*requirements[-1]
+            if not (len(values) + i_start) > 0:
                 values = cls.fillline(values)
                 log("[cyan][Return] Solved in 1a) end:[/]", values)
                 return values
-            values[i_start] = False
-            trim_end = i_start
+            values[i_start-1] = False
+            trim_end = i_start-1
 
         # 1b) End if requirements are met
 
