@@ -1,8 +1,9 @@
 "Utils for solving lines in Nonogram"
 
-from rich import print
+from rich import print as log
 
 from nonogram.solver.exceptions import UnsolvableLine
+from nonogram.utils import countin
 
 
 class NonogramLine():
@@ -12,12 +13,13 @@ class NonogramLine():
 
     @classmethod
     def getfullwidth(cls, requirements):
-        "Helper function to get the full required space for requirements"
+        "Helper function: Get the full required space for requirements"
         return sum(requirements)+len(requirements)-1
 
     @classmethod
     def getoffset(cls, values):
-        "Get blocked fields on the start and end of a line"
+        """Get blocked fields on the start and end of a line
+        Output format: (fullofset, leftoffset, rightoffset)"""
         offsetstart = 0
         for x in values:
             if x is not False:
@@ -33,7 +35,7 @@ class NonogramLine():
     @classmethod
     def getfreeranges(cls, values):
         """Get a list of free ranges in a line
-        Return format: [(len, pos, values), ...]"""
+        Output format: [(len, pos, values), ...]"""
         ranges = []
         curr = 0
         currstart = None
@@ -69,7 +71,13 @@ class NonogramLine():
             elif curr > 0:
                 meets.append(curr)
                 curr = 0
-        return meets == requirements
+        completed = meets == requirements
+
+        # Check for potential errors
+        if not completed and cls.isfull(values):
+            raise UnsolvableLine("Requirements are not met but line is full!")
+
+        return completed
 
     # Modify helpers
 
@@ -88,24 +96,24 @@ class NonogramLine():
         "Solving method: Requirements use full space"
         reqwidth = cls.getfullwidth(requirements)
         valwidth = len(values)
-        print("[yellow][Solving] Fullline start[/]")
-        print({"reqwidth": reqwidth, "valwidth": valwidth})
+        log("[yellow][Solving fullline] Start[/]")
+        log({"reqwidth": reqwidth, "valwidth": valwidth})
         if valwidth == reqwidth:
             index = 0
             for req in requirements:
                 values[index:index+req] = [True]*req
                 index += req+1
-            print("[yellow][Solving] Fullline succeeded[/]")
+            log("[yellow][Solving fullline] Succeeded[/]")
             return values
-        print("[yellow][Solving] Fullline failed[/]")
+        log("[yellow][Solving fullline] Failed[/]")
         return values
 
     @classmethod
     def solve_ranges(cls, values, requirements):
-        "Solving method"
+        "Solving method: Use free ranges"
         ranges = cls.getfreeranges(values)
-        print("[yellow][Solving] Ranges start[/]")
-        print({"ranges": ranges})
+        log("[yellow][Solving ranges] Start[/]")
+        log({"ranges": ranges})
 
         # Remove all ranges which are too small
         smallestreq = min(requirements)
@@ -113,8 +121,10 @@ class NonogramLine():
             if ran[0] < smallestreq:
                 values[ran[1][0]:ran[1][1]+1] = [False]*ran[0]
 
-        # Modify ranges at the end and start
+        # Update ranges var
         ranges = cls.getfreeranges(values)
+
+        # Modify ranges at the end and start
 
         for ran in ranges:
             if ran[0] < requirements[0]:
@@ -137,22 +147,18 @@ class NonogramLine():
                     values[ran[1][1]-requirements[-1]] = False
             break
 
-        # Check for exact ranges match
+        # Update ranges var
         ranges = cls.getfreeranges(values)
+
+        # Case "Exact match"
         if list(map(lambda x: x[0], ranges)) == requirements:
             for ran in ranges:
                 values[ran[1][0]:ran[1][1]+1] = [True]*ran[0]
-            print("[yellow][Solving] Ranges succeeded with exact match[/]")
+            log("[yellow][Solving ranges] Succeeded with exact match[/]")
             return values
 
-        # Check if requirements are met
-        isfull = cls.isfull(values)
-        iscompleted = cls.iscompleted(values, requirements)
 
-        if isfull and not iscompleted:
-            raise UnsolvableLine("This line seems impossible to solve!")
-
-        print("[yellow][Solving] Ranges ended[/]")
+        log("[yellow][Solving ranges] Ended[/]")
         return values
 
     # Main solving
@@ -162,18 +168,11 @@ class NonogramLine():
         "Try to solve a line"
 
         oldhash = hash(str(values))
-        print({"values": values, "requirements": requirements})
+        log({"values": values, "requirements": requirements})
 
         # START) Skip if line is already full
-        isfull = cls.isfull(values)
-        iscompleted = cls.iscompleted(values, requirements)
-        if isfull or iscompleted:
-            if not iscompleted:
-                raise UnsolvableLine(
-                    'Line already full but requirements are not met!')
-            if not isfull:
-                values = cls.fillline(values)
-                print(values)
+        if cls.iscompleted(values, requirements):
+            values = cls.fillline(values)
             return values
 
         # 1a) Trim from ends
@@ -186,7 +185,7 @@ class NonogramLine():
             values[i_first:i_end] = [True]*requirements[0]
             if not i_end < len(values):
                 cls.fillline(values)
-                print("[cyan][Return] Solved in 1a) start:[/]", values)
+                log("[cyan][Return] Solved in 1a) start:[/]", values)
                 return values
             values[i_end] = False
             trim_start = i_end+1
@@ -198,7 +197,7 @@ class NonogramLine():
             values[i_start:i_last] = [True]*requirements[-1]
             if not (len(values) + i_start) >= 0:
                 values = cls.fillline(values)
-                print("[cyan][Return] Solved in 1a) end:[/]", values)
+                log("[cyan][Return] Solved in 1a) end:[/]", values)
                 return values
             values[i_start] = False
             trim_end = i_start
@@ -207,13 +206,13 @@ class NonogramLine():
 
         if cls.iscompleted(values, requirements):
             values = cls.fillline(values)
-            print("[cyan][Return] Solved in 1a):[/]", values)
+            log("[cyan][Return] Solved in 1a):[/]", values)
             return values
 
         # 1c) Run for sublist if ends can be trimmed
         if trim_start or trim_end or offset[0]:
-            print("[blue][Recursive] Trimming line[/]",
-                  {"t_start": trim_start, "t_end": trim_end, "offset": offset})
+            log("[blue][Recursive] Trimming line[/]",
+                {"t_start": trim_start, "t_end": trim_end, "offset": offset})
             if trim_start and trim_end:
                 values[trim_start:trim_end] = cls.solve(
                     values[trim_start:trim_end], requirements[1:-1])
@@ -229,7 +228,7 @@ class NonogramLine():
                 values[offset[1]:-offset[2] or None] = cls.solve(
                     values[offset[1]:-offset[2] or None], requirements
                 )
-            print(values)
+            log(values)
             return values
 
         # 2a) Solve fullline
@@ -240,7 +239,7 @@ class NonogramLine():
 
         if cls.iscompleted(values, requirements):
             values = cls.fillline(values)
-            print("[cyan][Return] Solved in 2) Fullline:[/]", values)
+            log("[cyan][Return] Solved in 2) Fullline:[/]", values)
             return values
 
         # 3a) Solve ranges
@@ -251,16 +250,13 @@ class NonogramLine():
 
         if cls.iscompleted(values, requirements):
             values = cls.fillline(values)
-            print("[cyan][Return] Solved in 3) Ranges:[/]", values)
+            log("[cyan][Return] Solved in 3) Ranges:[/]", values)
             return values
 
         # END) Solve again if something has changed
         newhash = hash(str(values))
         if oldhash != newhash:
-            if cls.isfull(values):
-                raise UnsolvableLine(
-                    'Line already full but requirements are not met!')
-            print("[blue][Recursive] Line changed - solve again[/]")
+            log("[blue][Recursive] Line changed - solve again[/]")
             return cls.solve(values, requirements)
-        print("[cyan][Return] Line still unsolved:[/]", values)
+        log("[cyan][Return] Line still unsolved:[/]", values)
         return values

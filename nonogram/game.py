@@ -2,7 +2,7 @@
 
 import copy
 
-from rich import print
+from rich import print as log
 from rich.table import Table, Column
 from rich.rule import Rule
 
@@ -124,7 +124,7 @@ class NonogramGame():
                 " ".join(map(str, self.xinfo[row])),
                 *map(_cell, self.rows[row])
             )
-        print(Rule(end='\n'), tab, Rule(end='\n'))
+        log(Rule(end='\n'), tab, Rule(end='\n'))
 
     # Solving
 
