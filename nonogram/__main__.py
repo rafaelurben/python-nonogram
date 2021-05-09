@@ -3,7 +3,7 @@
 from nonogram.game import NonogramGame
 from nonogram import examples
 
-data = examples.hard1
+data = examples.expert1
 
 game = NonogramGame(**data)
 gamecopy = NonogramGame(**data)
