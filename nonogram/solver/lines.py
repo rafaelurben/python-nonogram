@@ -1,12 +1,10 @@
 "Utils for solving lines in Nonogram"
 
-from rich import print as log
-
 from nonogram.solver.exceptions import UnsolvableLine
-from nonogram.utils import countin
+from nonogram.utils import countin, debug
 
 
-class NonogramLine():
+class NonogramLineSolver():
     "Class with helper methods for solving individual lines"
 
     # Get helpers
@@ -97,24 +95,24 @@ class NonogramLine():
         "Solving method: Requirements use full space"
         reqwidth = cls.getfullwidth(requirements)
         valwidth = len(values)
-        log("[yellow][Solving fullline] Start[/]")
-        log({"reqwidth": reqwidth, "valwidth": valwidth})
+        debug("[yellow][Solving fullline] Start[/]")
+        debug({"reqwidth": reqwidth, "valwidth": valwidth})
         if valwidth == reqwidth:
             index = 0
             for req in requirements:
                 values[index:index+req] = [True]*req
                 index += req+1
-            log("[yellow][Solving fullline] Succeeded[/]")
+            debug("[yellow][Solving fullline] Succeeded[/]")
             return values
-        log("[yellow][Solving fullline] Failed[/]")
+        debug("[yellow][Solving fullline] Failed[/]")
         return values
 
     @classmethod
     def solve_ranges(cls, values, requirements):
         "Solving method: Use free ranges"
         ranges = cls.getfreeranges(values)
-        log("[yellow][Solving ranges] Start[/]")
-        log({"ranges": ranges})
+        debug("[yellow][Solving ranges] Start[/]")
+        debug({"ranges": ranges})
 
         # Remove all ranges which aren't usable
         smallestreq = min(requirements)
@@ -159,7 +157,7 @@ class NonogramLine():
         if list(map(lambda x: x[0], ranges)) == requirements:
             for ran in ranges:
                 values[ran[1][0]:ran[1][1]+1] = [True]*ran[0]
-            log("[yellow][Solving ranges] Succeeded with exact match[/]")
+            debug("[yellow][Solving ranges] Succeeded with exact match[/]")
             return values
 
         # Case "Only one requirement in one range"
@@ -172,7 +170,7 @@ class NonogramLine():
             # Get length of Trues, space left and space right
             # Use this info to maybe fill up a little bit
 
-        log("[yellow][Solving ranges] Ended[/]")
+        debug("[yellow][Solving ranges] Ended[/]")
         return values
 
     # Main solving
@@ -182,13 +180,13 @@ class NonogramLine():
         "Try to solve a line"
 
         oldhash = hash(str(values))
-        log({"values": values, "requirements": requirements})
+        debug({"values": values, "requirements": requirements})
 
         # START) Skip if line is already full
         if cls.iscompleted(values, requirements):
             if not cls.isfull(values):
                 values = cls.fillline(values)
-                log(values)
+                debug(values)
             return values
 
         # 1a) Trim from ends
@@ -201,7 +199,7 @@ class NonogramLine():
             values[i_first:i_end] = [True]*requirements[0]
             if not i_end < len(values):
                 cls.fillline(values)
-                log("[cyan][Return] Solved in 1a) start:[/]", values)
+                debug("[cyan][Return] Solved in 1a) start:[/]", values)
                 return values
             values[i_end] = False
             trim_start = i_end+1
@@ -215,7 +213,7 @@ class NonogramLine():
             values[i_start:i_last+1 or None] = [True]*requirements[-1]
             if not (len(values) + i_start) > 0:
                 values = cls.fillline(values)
-                log("[cyan][Return] Solved in 1a) end:[/]", values)
+                debug("[cyan][Return] Solved in 1a) end:[/]", values)
                 return values
             values[i_start-1] = False
             trim_end = i_start-1
@@ -224,12 +222,12 @@ class NonogramLine():
 
         if cls.iscompleted(values, requirements):
             values = cls.fillline(values)
-            log("[cyan][Return] Solved in 1a):[/]", values)
+            debug("[cyan][Return] Solved in 1a):[/]", values)
             return values
 
         # 1c) Run for sublist if ends can be trimmed
         if trim_start or trim_end or offset[0]:
-            log("[blue][Recursive] Trimming line[/]",
+            debug("[blue][Recursive] Trimming line[/]",
                 {"t_start": trim_start, "t_end": trim_end, "offset": offset})
             if trim_start and trim_end:
                 values[trim_start:trim_end] = cls.solve(
@@ -246,7 +244,7 @@ class NonogramLine():
                 values[offset[1]:-offset[2] or None] = cls.solve(
                     values[offset[1]:-offset[2] or None], requirements
                 )
-            log(values)
+            debug(values)
             return values
 
         # 2a) Solve fullline
@@ -257,7 +255,7 @@ class NonogramLine():
 
         if cls.iscompleted(values, requirements):
             values = cls.fillline(values)
-            log("[cyan][Return] Solved in 2) Fullline:[/]", values)
+            debug("[cyan][Return] Solved in 2) Fullline:[/]", values)
             return values
 
         # 3a) Solve ranges
@@ -268,13 +266,13 @@ class NonogramLine():
 
         if cls.iscompleted(values, requirements):
             values = cls.fillline(values)
-            log("[cyan][Return] Solved in 3) Ranges:[/]", values)
+            debug("[cyan][Return] Solved in 3) Ranges:[/]", values)
             return values
 
         # END) Solve again if something has changed
         newhash = hash(str(values))
         if oldhash != newhash:
-            log("[blue][Recursive] Line changed - solve again[/]")
+            debug("[blue][Recursive] Line changed - solve again[/]")
             return cls.solve(values, requirements)
-        log("[cyan][Return] Line still unsolved:[/]", values)
+        debug("[cyan][Return] Line still unsolved:[/]", values)
         return values

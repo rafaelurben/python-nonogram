@@ -2,12 +2,11 @@
 
 import copy
 
-from rich import print as log
 from rich.table import Table, Column
 from rich.rule import Rule
 
-from nonogram.solver import solve
-
+from nonogram.solver import NonogramBoardSolver
+from nonogram.utils import log
 
 def _cell(value):
     "Helper function to represent values of a cell"
@@ -128,4 +127,7 @@ class NonogramGame():
 
     # Solving
 
-    solve = solve
+    def solve(self):
+        "Solve the board with the solver module"
+
+        return NonogramBoardSolver.solve(self)
