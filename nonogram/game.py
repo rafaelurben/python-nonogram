@@ -8,6 +8,7 @@ from rich.rule import Rule
 from nonogram.solver import NonogramBoardSolver
 from nonogram.utils import log
 
+
 def _cell(value):
     "Helper function to represent values of a cell"
     if value is True:
@@ -104,9 +105,9 @@ class NonogramGame():
             'board': copy.deepcopy(self.__board),
         }
 
-    def print(self):
-        "Print this gameboard"
+    # Display
 
+    def __get_table(self):
         tab = Table(
             Column(justify='right', no_wrap=True),
             title="Nonogram game",
@@ -123,7 +124,17 @@ class NonogramGame():
                 " ".join(map(str, self.xinfo[row])),
                 *map(_cell, self.rows[row])
             )
-        log(Rule(end='\n'), tab, Rule(end='\n'))
+        return tab
+
+    def __rich_console__(self, console, options):
+        yield Rule(end='\n')
+        yield self.__get_table()
+        yield Rule(end='\n')
+
+    def print(self):
+        "Print this gameboard"
+
+        log(Rule(end='\n'), self.__get_table(), Rule(end='\n'))
 
     # Solving
 

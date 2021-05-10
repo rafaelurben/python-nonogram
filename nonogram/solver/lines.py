@@ -228,7 +228,7 @@ class NonogramLineSolver():
         # 1c) Run for sublist if ends can be trimmed
         if trim_start or trim_end or offset[0]:
             debug("[blue][Recursive] Trimming line[/]",
-                {"t_start": trim_start, "t_end": trim_end, "offset": offset})
+                  {"t_start": trim_start, "t_end": trim_end, "offset": offset})
             if trim_start and trim_end:
                 values[trim_start:trim_end] = cls.solve(
                     values[trim_start:trim_end], requirements[1:-1])
