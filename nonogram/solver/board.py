@@ -43,16 +43,14 @@ class NonogramBoardSolver:
                 i, NonogramLineSolver.solve(rows[i], xinfo[i]))
 
         if cls.issolved(game):
-            debug(game)
-            debug(Rule(title="Solving completed"))
+            debug(game, Rule(title="Solving completed"))
             return True
 
         newhash = hash(str(game.rows))
 
         if oldhash != newhash:
-            debug(game)
-            debug(Rule(title="Next solving cycle"))
+            debug(game, Rule(title="Next solving cycle"))
             return cls.solve(game)
 
-        debug(Rule(title="Solving failed"))
+        debug(game, Rule(title="Solving failed"))
         return False

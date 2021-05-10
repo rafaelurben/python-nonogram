@@ -2,6 +2,7 @@
 
 import click
 
+from rich import print
 from rich.table import Table
 from rich.rule import Rule
 
@@ -13,12 +14,21 @@ from nonogram.examples import all_examples
 @click.group()
 @click.version_option(message="python-nonogram by rafaelurben, version %(version)s")
 def main():
-    "The main command"
+    """
+    A simple Python implementation of "nonogram"
+
+    python-nonogram by rafaelurben
+
+    Links:
+
+    - Project: https://github.com/rafaelurben/python-nonogram\n
+    - Author: https://github.com/rafaelurben
+    """
 
 # Commands
 
 
-@click.command()
+@main.command()
 @click.argument('name')
 @click.option('--verbose', '-v', default=False, help='Activate verbose output', is_flag=True)
 def run_test(name, verbose=False):
@@ -42,7 +52,7 @@ def run_test(name, verbose=False):
         log(Rule("Test failed"))
 
 
-@click.command()
+@main.command()
 def run_tests():
     "Test the solver module for all examples"
 
@@ -56,9 +66,3 @@ def run_tests():
         tab.add_row(category, str(num), "✅" if result else "❌")
 
     log(tab, Rule("Tests ended"))
-
-# Add to group
-
-
-main.add_command(run_test)
-main.add_command(run_tests)

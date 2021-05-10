@@ -17,11 +17,13 @@ def setting(name, value):
 
 
 def debug(*args, **kwargs):
+    "Shortcut for rich.print but depends on 'debug' setting"
     if _settings['debug']:
         rprint(*args, **kwargs)
 
 
 def log(*args, **kwargs):
+    "Shortcut for rich.print"
     rprint(*args, **kwargs)
 
 # Random stuff

@@ -97,6 +97,8 @@ class NonogramLineSolver():
         valwidth = len(values)
         debug("[yellow][Solving fullline] Start[/]")
         debug({"reqwidth": reqwidth, "valwidth": valwidth})
+        if reqwidth > valwidth:
+            raise UnsolvableLine("Requirements use more space than possible!")
         if valwidth == reqwidth:
             index = 0
             for req in requirements:
@@ -164,11 +166,38 @@ class NonogramLineSolver():
         if len(requirements) == 1 and len(ranges) == 1:
             req = requirements[0]
             ran = ranges[0]
-            # TODO
-            # Fill from middle if req longer than ran[0]/2 !EVEN/ODD!
-            # Fill between multiple Trues
-            # Get length of Trues, space left and space right
-            # Use this info to maybe fill up a little bit
+            half = ran[0]/2
+
+            i_start = None
+            i_end = None
+
+            if req > half:
+                diff = req - half
+                i_start = int(half-diff)
+                i_end = int(half+diff)
+
+            for i, value in enumerate(ran[2]):
+                if value is True:
+                    if i_start is None or i < i_start:
+                        i_start = i
+                    if i_end is None or i > i_end:
+                        i_end = i+1
+
+            if i_start is not None and i_end is not None:
+                missing = req-(i_end-i_start)
+
+                if i_start < missing:
+                    i_end += (missing-i_start)
+                if ran[0]-i_end < missing:
+                    i_start -= (missing-(ran[0]-i_end))
+
+                debug(ran[1][0]+i_start, ran[1][0]+i_end)
+                values[ran[1][0]+i_start:ran[1][0]+i_end] = [True]*(i_end-i_start)
+                debug(values)
+
+        # Case "More than one requirement in one range"
+        elif len(ranges) == 1:
+            ... # TODO
 
         debug("[yellow][Solving ranges] Ended[/]")
         return values
