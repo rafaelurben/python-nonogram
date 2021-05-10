@@ -171,11 +171,13 @@ class NonogramLineSolver():
             i_start = None
             i_end = None
 
+            # Set start and end index to distance starting from the middle
             if req > half:
                 diff = req - half
                 i_start = int(half-diff)
                 i_end = int(half+diff)
 
+            # Change start/end if already present and not between
             for i, value in enumerate(ran[2]):
                 if value is True:
                     if i_start is None or i < i_start:
@@ -183,6 +185,7 @@ class NonogramLineSolver():
                     if i_end is None or i > i_end:
                         i_end = i+1
 
+            # Move start/end left/right and replace values
             if i_start is not None and i_end is not None:
                 missing = req-(i_end-i_start)
 
@@ -191,9 +194,7 @@ class NonogramLineSolver():
                 if ran[0]-i_end < missing:
                     i_start -= (missing-(ran[0]-i_end))
 
-                debug(ran[1][0]+i_start, ran[1][0]+i_end)
                 values[ran[1][0]+i_start:ran[1][0]+i_end] = [True]*(i_end-i_start)
-                debug(values)
 
         # Case "More than one requirement in one range"
         elif len(ranges) == 1:
