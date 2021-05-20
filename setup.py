@@ -2,9 +2,9 @@ from setuptools import setup
 
 setup(
     name="python-nonogram",
-    version="0.1.1",
+    version="1.1.1",
     install_requires=[
-        "rich>=10.1.0",
+        "rich>=10.2.2",
         "click>=7.1.2",
     ],
     entry_points='''
