@@ -110,6 +110,61 @@ class NonogramLineSolver():
         return values
 
     @classmethod
+    def solve_singlerangesinglereq(cls, values, req):
+        "Solving method: 1 Requirement in 1 range"
+
+        length = len(values)
+        half = length/2
+
+        i_start = None
+        i_end = None
+
+        # Set start and end index to distance starting from the middle
+        if req > half:
+            diff = req - half
+            i_start = int(half-diff)
+            i_end = int(half+diff)
+
+        # Change start/end if already present and not between
+        for i, value in enumerate(values):
+            if value is True:
+                if i_start is None or i < i_start:
+                    i_start = i
+                if i_end is None or i > i_end:
+                    i_end = i+1
+
+        # Move start/end left/right and replace values
+        if i_start is not None and i_end is not None:
+            missing = req-(i_end-i_start)
+
+            if i_start < missing:
+                i_end += (missing-i_start)
+            if length-i_end < missing:
+                i_start -= (missing-(length-i_end))
+
+            values[i_start:i_end] = [True]*(i_end-i_start)
+        return values
+
+    @classmethod
+    def solve_singlerangemultireq(cls, values, requirements):
+        "Solving method: More than 1 requirement in 1 range"
+        debug("[red][Solving singlerange] Start[/]")
+        debug({"values": values, "requirements": requirements})
+
+        debug("[red][Solving singlerange] End[/]")
+        return values
+
+    @classmethod
+    def solve_multirange(cls, values, requirements):
+        "Solving method: Multirange"
+        ranges = cls.getfreeranges(values)
+        debug("[red][Solving multirange] Start[/]")
+        debug({"values": values, "ranges": ranges, "requirements": requirements})
+
+        debug("[red][Solving multirange] End[/]")
+        return values
+
+    @classmethod
     def solve_ranges(cls, values, requirements):
         "Solving method: Use free ranges"
         ranges = cls.getfreeranges(values)
@@ -162,43 +217,30 @@ class NonogramLineSolver():
             debug("[yellow][Solving ranges] Succeeded with exact match[/]")
             return values
 
+        elif countin(map(lambda x: True in x[2], ranges), True) == len(requirements):
+            for i, ran in enumerate(ranges):
+                req = requirements[i]
+                values[ran[1][0]:ran[1][1]+1] = cls.solve_singlerangesinglereq(ran[2], req)
+            return values
+
         # Case "Only one requirement in one range"
         if len(requirements) == 1 and len(ranges) == 1:
             req = requirements[0]
             ran = ranges[0]
-            half = ran[0]/2
 
-            i_start = None
-            i_end = None
-
-            # Set start and end index to distance starting from the middle
-            if req > half:
-                diff = req - half
-                i_start = int(half-diff)
-                i_end = int(half+diff)
-
-            # Change start/end if already present and not between
-            for i, value in enumerate(ran[2]):
-                if value is True:
-                    if i_start is None or i < i_start:
-                        i_start = i
-                    if i_end is None or i > i_end:
-                        i_end = i+1
-
-            # Move start/end left/right and replace values
-            if i_start is not None and i_end is not None:
-                missing = req-(i_end-i_start)
-
-                if i_start < missing:
-                    i_end += (missing-i_start)
-                if ran[0]-i_end < missing:
-                    i_start -= (missing-(ran[0]-i_end))
-
-                values[ran[1][0]+i_start:ran[1][0]+i_end] = [True]*(i_end-i_start)
+            values[ran[1][0]:ran[1][1] +
+                   1] = cls.solve_singlerangesinglereq(ran[2], req)
 
         # Case "More than one requirement in one range"
         elif len(ranges) == 1:
-            ... # TODO
+            ran = ranges[0]
+            values[ran[1][0]:ran[1][1] +
+                   1] = cls.solve_singlerangemultireq(ran[2], requirements)
+
+        # Case "More than one requirement in more than one range"
+        elif len(ranges) > 1 and len(requirements) > 1:
+            s = slice(ranges[0][1][0], ranges[-1][1][1]+1)
+            values[s] = cls.solve_multirange(values[s], requirements)
 
         debug("[yellow][Solving ranges] Ended[/]")
         return values
